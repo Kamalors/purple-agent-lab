@@ -10,3 +10,5 @@ reports/
 artifacts/
 config/lab.toml
 rebuild-lab.ps1
+get-report.ps1
+report.json

@@ -104,6 +104,7 @@
 
   /* panels */
   .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .panel.drag{outline:2px dashed var(--accent);outline-offset:3px}
   .steps{display:flex;flex-direction:column;gap:12px;counter-reset:s}
   .step{display:flex;gap:12px}
   .step .n{counter-increment:s;flex:none;width:23px;height:23px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
@@ -256,10 +257,15 @@ ssh lab-guest "sudo bash /tmp/campaign.sh"</pre></div></div>
 
   <section>
     <div class="sec-head"><span class="eyebrow">Rapport</span><h2>Charger un rapport</h2></div>
-    <div class="panel">
-      <textarea id="input" placeholder='Colle ici le contenu de reports/latest.json…' spellcheck="false"></textarea>
+    <div class="panel" id="loadPanel">
+      <div class="loadbar" style="margin-top:0">
+        <label class="btn primary" for="file" style="display:inline-block">Choisir un fichier report.json</label>
+        <input type="file" id="file" accept=".json,application/json" hidden>
+        <span class="msg" style="color:var(--faint)">ou glisse-dépose le fichier ici, ou colle le JSON ci-dessous</span>
+      </div>
+      <textarea id="input" placeholder='Colle ici le contenu de reports/latest.json…' spellcheck="false" style="margin-top:12px"></textarea>
       <div class="loadbar">
-        <button class="btn primary" id="load">Afficher ce rapport</button>
+        <button class="btn" id="load">Afficher le JSON collé</button>
         <button class="btn" id="reset">Revenir à l'exemple</button>
         <span class="msg" id="loadmsg"></span>
       </div>
@@ -272,6 +278,7 @@ ssh lab-guest "sudo bash /tmp/campaign.sh"</pre></div></div>
 </div>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<!--REPORT-INJECT-->
 <script>
 const SCEN = {
   S01:{title:"Injection directe",rule:"secret",atlas:"AML.T0051.000",name:"Prompt Injection: Direct"},
@@ -518,27 +525,45 @@ document.getElementById("clearHist").onclick=()=>{
   };
 })();
 
-// load / reset
+// load / reset / file / drag-drop
 const input=document.getElementById("input"), msg=document.getElementById("loadmsg");
+function loadReportObj(rep, how){
+  if(!rep || typeof rep!=="object" || !Array.isArray(rep.results)){
+    msg.style.color="var(--red)"; msg.textContent="✗ rapport invalide"; return false;
+  }
+  const saved=pushHistory(rep); render(saved); renderHistory();
+  try{localStorage.setItem("pal-report",JSON.stringify(saved))}catch(e){}
+  msg.style.color="var(--green)"; msg.textContent="✓ "+(how||"chargé")+" — "+rep.results.length+" sessions";
+  window.scrollTo({top:0,behavior:"smooth"});
+  return true;
+}
 document.getElementById("load").onclick=()=>{
-  try{
-    const rep=JSON.parse(input.value);
-    if(!rep||typeof rep!=="object"||!Array.isArray(rep.results)) throw 0;
-    const saved = pushHistory(rep);
-    render(saved); try{localStorage.setItem("pal-report",JSON.stringify(saved))}catch(e){}
-    renderHistory();
-    msg.style.color="var(--green)"; msg.textContent="✓ rapport ajouté à l'historique ("+rep.results.length+" sessions)";
-  }catch(e){ msg.style.color="var(--red)"; msg.textContent="✗ JSON invalide — colle le contenu de latest.json"; }
+  try{ loadReportObj(JSON.parse(input.value), "rapport collé"); }
+  catch(e){ msg.style.color="var(--red)"; msg.textContent="✗ JSON invalide — colle le contenu de latest.json"; }
 };
 document.getElementById("reset").onclick=()=>{
   try{localStorage.removeItem("pal-report")}catch(e){}
   input.value=""; msg.textContent=""; render(SAMPLE);
 };
+function readFile(f, how){
+  if(!f) return; const r=new FileReader();
+  r.onload=()=>{ try{ loadReportObj(JSON.parse(r.result), how); }
+    catch(e){ msg.style.color="var(--red)"; msg.textContent="✗ JSON invalide dans le fichier"; } };
+  r.readAsText(f);
+}
+document.getElementById("file").addEventListener("change", e=>readFile(e.target.files[0], "fichier chargé"));
+const drop=document.getElementById("loadPanel");
+["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev, e=>{e.preventDefault(); drop.classList.add("drag");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev, e=>{e.preventDefault(); drop.classList.remove("drag");}));
+drop.addEventListener("drop", e=>readFile(e.dataTransfer.files[0], "fichier déposé"));
 
 document.getElementById("play").onclick = playMap;
 
-// boot: saved report if any, else sample
+// boot: rapport injecté (get-report.ps1) > rapport sauvegardé > exemple
 (function(){
+  if(window.__REPORT__ && Array.isArray(window.__REPORT__.results)){
+    pushHistory(window.__REPORT__); render(window.__REPORT__); renderHistory(); return;
+  }
   let saved=null; try{saved=localStorage.getItem("pal-report")}catch(e){}
   if(saved){ try{ const r=JSON.parse(saved); if(Array.isArray(r.results)){ render(r); renderHistory(); return; } }catch(e){} }
   render(SAMPLE); renderHistory();
