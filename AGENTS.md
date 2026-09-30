@@ -89,9 +89,21 @@ charger `reports/latest.json` dans le dashboard (ou conteneur dashboard live).
   mêmes verdicts. Pour de la variété : nouveaux seeds, vrai agent Hermes, ou
   autres modèles.
 
+## Décisions d'architecture (à respecter par tout contributeur, IA comprise)
+
+Voir **`docs/DECISIONS.md`** (source de vérité de la direction commune). En bref :
+- **D1** — cerveau des futurs agents = **LLM frontière (Claude ou ChatGPT) via API**
+  (puissance de raisonnement). Les modèles Ollama locaux de l'Étape 1 sont la
+  **cible/attaquant du lab d'injection**, pas le cerveau des agents.
+- **D2** — outillage offensif = **conteneur Kali piloté via un serveur MCP**
+  (surface bornée, allowlist au niveau MCP, journalisation, validation humaine).
+  Planifié.
+- **D3** — cibles = **pseudo-infrastructure de lab** (montée par nous, jamais de
+  tiers). Planifiée.
+
 ## Suite du projet
 
-`docs/ROADMAP.md` + les personas dans `docs/personas/`. Prochaines briques : des
+`docs/ROADMAP.md` + `docs/DECISIONS.md` + les personas dans `docs/personas/`. Prochaines briques : des
 agents Red spécialisés (recon, exploit, post-exploit), chacun un `RedAgent` du
 framework, gardé par l'allowlist, dont la valeur est le **signal produit pour la
 détection Blue**.
