@@ -9,3 +9,4 @@ logs/
 reports/
 artifacts/
 config/lab.toml
+rebuild-lab.ps1

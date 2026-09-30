@@ -1,61 +1,76 @@
 # Purple Agent Lab
 
-Laboratoire multi-agents **Red / Blue / Purple**, orienté sécurité des systèmes
-à base de LLM. Le projet fonctionne **exclusivement sur des cibles de laboratoire
-autorisées**.
+Laboratoire multi-agents **Red / Blue / Purple** pour la sécurité des systèmes à
+base de LLM. On **attaque** un modèle par injection de prompt, on le **défend**,
+et un vérificateur indépendant **mesure** les résultats — le tout mappé sur
+**MITRE ATLAS**. Fonctionne **exclusivement sur des cibles de laboratoire autorisées**.
 
-Deux couches :
+## Ce que ça contient
 
-1. **Framework d'orchestration** (`src/`) — un cycle `Red → allowlist → Blue`
-   avec rapport de couverture, en Python pur (aucune dépendance).
-2. **Lab d'injection de prompt** — une VM dédiée (Proxmox) qui fait tourner une
-   cible LLM gardée, un agent attaquant (Hermes) et un vérificateur indépendant.
-   Le framework rejoue les preuves du lab et les tague en **MITRE ATLAS**.
+- **`src/`** — framework d'orchestration Red → Blue → Purple, Python pur (0 dépendance).
+- **`lab/`** — le lab d'injection déployé en conteneurs Docker (cible LLM gardée,
+  agent attaquant Hermes, vérificateur déterministe).
+- **`deploy/`** — provisioning Proxmox (`provision.sh`) et campagne d'attaque (`campaign.sh`).
+- **`dashboard.html`** — tableau de bord graphique : carte des attaques animée,
+  verdicts par scénario, couverture ATLAS, historique des campagnes.
+  Ouvre-le dans un navigateur, ou charge un rapport (`reports/latest.json`) dedans.
 
 ## Architecture
 
 ```
-Red  (attaquant)      Blue (défense/détection)     Purple (orchestrateur)
-─────────────────     ────────────────────────     ──────────────────────
-InjectionRedAgent  →  garde-fou allowlist       →  PurpleOrchestrator
-(scénarios S01–S08)   InjectionBlueAgent            CycleReport.coverage
-                      (portage du vérificateur)     mapping ATLAS
+RED (attaquant)          CIBLE (Blue)              PURPLE (arbitre)
+──────────────────       ─────────────────────     ────────────────────
+hermes + ollama-3b   →   api + ollama-target   →   verifier (sans réseau)
+(génère l'injection)     (LLM gardé, secret)       → reports/latest.json
 ```
 
-Le lab distant (VM `llm-security-lab`, `10.10.10.40`) : cible `qwen2.5:1.5b`
-gardée par un system prompt, attaquant `qwen2.5:3b` piloté par Hermes,
-vérificateur déterministe sans réseau. Conteneurs `cap_drop: ALL`, réseaux
-`internal`, deux jetons distincts en comparaison timing-safe.
+Une VM Proxmox (`10.10.10.40`) fait tourner ces services en **conteneurs Docker
+isolés** sur des réseaux `internal` (pas d'Internet au runtime), `cap_drop: ALL`,
+deux jetons d'accès distincts.
 
 ## Mapping MITRE ATLAS
 
 | Scénario | Attaque | Technique |
 |----------|---------|-----------|
-| S01 | Injection directe | `AML.T0051.000` LLM Prompt Injection: Direct |
+| S01 | Injection directe | `AML.T0051.000` Prompt Injection: Direct |
 | S02 | Usurpation d'autorité | `AML.T0051.000` |
-| S03 | Extraction du message système | `AML.T0056` LLM Meta Prompt Extraction |
+| S03 | Extraction du message système | `AML.T0056` Meta Prompt Extraction |
 | S04 | Escalade conversationnelle | `AML.T0054` LLM Jailbreak |
 | S05 | Rupture du format JSON | `AML.T0051.000` |
 | S06 | Autorisation simulée | `AML.T0051.000` |
-| S07 | Injection dans un document | `AML.T0051.001` LLM Prompt Injection: Indirect |
+| S07 | Injection dans un document | `AML.T0051.001` Prompt Injection: Indirect |
 | S08 | Traduction et encodage | `AML.T0057` LLM Data Leakage |
 
-IDs à revérifier sur <https://atlas.mitre.org> (matrice vivante).
+## Prérequis pour participer
 
-## Démarrage
+**Pour contribuer au code** (framework, dashboard, scénarios) — suffisant pour la plupart :
+- **Python 3.11+** (les tests sont en stdlib pure, aucun `pip install`).
+- **Git** + un compte **GitHub**.
+- **Claude Code** avec un modèle **Opus (4.8 / 5.5 recommandé)** — l'agent utilisé pour développer ce lab.
+- Un navigateur pour ouvrir `dashboard.html`.
+
+**Pour lancer le lab en vrai** (en plus) :
+- Accès **SSH** à la VM du lab (le mainteneur ajoute ta clé publique), avec `ssh`/`scp` (OpenSSH).
+- *Ou* ton propre hôte **Proxmox VE 9.x** (≥ 8 cœurs, ≥ 18 Gio RAM libre, ≥ 64 Go disque) pour rejouer `deploy/provision.sh`.
+
+## Démarrage (contributeur)
 
 ```bash
-python tests/test_orchestrator.py    # framework
-python tests/test_llm_injection.py   # pont injection + détection
-
-# Rapport ATLAS sur une exécution réelle du lab (fichiers data/*.json) :
-python -c "from src.llm_injection import load_sessions, atlas_summary; \
-import json; print(json.dumps(atlas_summary(load_sessions('data')), indent=2))"
+git clone https://github.com/Kamalors/purple-agent-lab
+cd purple-agent-lab
+python tests/test_orchestrator.py     # framework
+python tests/test_llm_injection.py    # pont injection + détection
+# puis ouvre dashboard.html dans un navigateur
 ```
 
-Périmètre autorisé : voir `config/lab.example.toml` (copier en `config/lab.toml`).
-Le garde-fou refuse par défaut toute cible non listée (fail-closed).
+## Lancer une simulation (avec accès au lab)
+
+```bash
+scp deploy/campaign.sh lab-guest:/tmp/campaign.sh
+ssh lab-guest "sudo bash /tmp/campaign.sh"   # rejoue les 8 scénarios + vérificateur
+```
+Copie le rapport JSON affiché → colle-le dans `dashboard.html` (section « Charger un rapport »).
 
 ## Contribuer
 
-Voir [CONTRIBUTING.md](CONTRIBUTING.md).
+Voir [CONTRIBUTING.md](CONTRIBUTING.md). Règle unique : **cibles de laboratoire autorisées uniquement**.

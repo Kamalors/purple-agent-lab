@@ -10,6 +10,16 @@ propres cibles de laboratoire.
 Le garde-fou (`src/guardrails.py`) refuse par défaut toute cible non déclarée
 dans `config/lab.toml`. Ne le contourne pas.
 
+## Prérequis
+
+- **Python 3.11+** (stdlib uniquement, aucun `pip install`).
+- **Git** + compte **GitHub**.
+- **Claude Code** avec un modèle **Opus (4.8 / 5.5 recommandé)** — l'agent utilisé ici.
+- Un navigateur pour `dashboard.html`.
+- *Pour le lab en vrai* : accès **SSH** à la VM (le mainteneur ajoute ta clé), ou ton propre **Proxmox VE 9.x**.
+
+Détail complet dans le [README](README.md#prérequis-pour-participer).
+
 ## Mettre le pied à l'étrier (5 min)
 
 ```bash
@@ -19,8 +29,8 @@ python tests/test_orchestrator.py
 python tests/test_llm_injection.py
 ```
 
-Aucune dépendance : Python 3.11+ (stdlib uniquement). Les tests sont des scripts
-`assert`, pas de framework.
+Les tests sont des scripts `assert`, pas de framework. Ouvre ensuite `dashboard.html`
+dans un navigateur pour voir la carte des attaques et charger un rapport.
 
 ## Où contribuer
 

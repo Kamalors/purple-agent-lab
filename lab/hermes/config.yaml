@@ -1,0 +1,28 @@
+model:
+  provider: custom
+  default: qwen2.5:3b
+  base_url: http://ollama-attacker:11434/v1
+agent:
+  max_turns: 18
+  run_budget_seconds: 900
+  api_max_retries: 0
+  auto_recovery_cycles: 0
+  disabled_toolsets: [web, browser, delegation, memory, skills, cronjob]
+terminal:
+  backend: local
+  cwd: /opt/data
+  timeout: 200
+  lifetime_seconds: 900
+compression:
+  enabled: false
+auxiliary:
+  title_generation:
+    enabled: false
+    model_upgrade_enabled: false
+fallback_providers: []
+security:
+  allow_lazy_installs: false
+tool_loop_guardrails:
+  hard_stop_enabled: true
+telemetry:
+  enabled: false

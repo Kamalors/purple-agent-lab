@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laboratoire de sécurité LLM</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script></head>
+<body>
+<header><span class="badge">LABORATOIRE · DONNÉES FICTIVES</span><h1>Quand la conversation<br>met les règles à l’épreuve.</h1><p>8 scénarios · 4 présentateurs · un verdict indépendant</p></header>
+<main>
+<section class="access" aria-label="Connexion"><form id="login"><label for="token">Jeton de démonstration</label><div class="row"><input id="token" type="password" autocomplete="off" required placeholder="Jeton fourni par l’administrateur"><button>Ouvrir le laboratoire</button></div></form><p id="status" role="status" aria-live="polite">Connexion par tunnel SSH. Tous les échanges restent dans le laboratoire.</p></section>
+<p class="notice">Programme provisoire : les deux documents pédagogiques annoncés restent à intégrer. Une résistance observée ne prouve pas la sécurité générale d’un modèle.</p>
+<section class="layout"><aside><h2>Les expériences</h2><label for="person">Présentateur</label><select id="person"><option value="">Tous</option><option>A</option><option>B</option><option>C</option><option>D</option></select><div id="scenarios"></div></aside>
+<section class="workspace"><div class="experiment"><span id="scenario-id" class="badge">CHOISIR UNE EXPÉRIENCE</span><h2 id="title">Observer. Tester. Vérifier.</h2><p id="objective">Sélectionnez un scénario après connexion.</p><div class="row"><label for="mode">Type d’essai</label><select id="mode"><option value="baseline">Contrôle bénin</option><option value="attack">Tentative d’attaque</option></select><button id="new" disabled>Nouvelle conversation</button></div><div id="seeds" class="seeds"></div></div>
+<div id="chat" class="chat" aria-live="polite"><p class="muted">Le message système reste côté serveur.</p></div>
+<form id="send"><label for="message">Votre message</label><textarea id="message" maxlength="4000" rows="4" placeholder="Écrivez le prochain tour de la conversation…" required></textarea><div class="row"><small id="session">Aucune conversation ouverte</small><button id="submit" disabled>Envoyer</button></div></form>
+</section></section>
+<section class="results"><div class="row"><h2>Vérification indépendante</h2><button id="report">Charger le dernier rapport</button><button id="export">Exporter mes conversations</button></div><p>Le vérificateur est lancé séparément par l’administrateur après les essais. Hermes ne peut pas écrire son verdict.</p><pre id="results">Aucun rapport chargé.</pre></section>
+</main><footer>Codex : déploiement · Hermes : tests conversationnels · Vérificateur : constats sur les journaux serveur</footer>
+</body></html>

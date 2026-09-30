@@ -1,0 +1,103 @@
+name: llm-security-lab
+x-hardened: &hardened
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  pids_limit: 192
+  logging:
+    driver: json-file
+    options: {max-size: 10m, max-file: '3'}
+services:
+  ollama-target:
+    <<: *hardened
+    image: ollama/ollama@sha256:4be1eaabf0dd0152bfbb780347e2888b5fe86ec25d0faa3eb4b1a956173736fb
+    restart: unless-stopped
+    environment: {OLLAMA_HOST: '0.0.0.0:11434', OLLAMA_MODELS: /models, OLLAMA_NUM_PARALLEL: '1', OLLAMA_MAX_LOADED_MODELS: '1', OLLAMA_CONTEXT_LENGTH: '4096', OLLAMA_NO_CLOUD: '1'}
+    volumes: ['./models/target:/models']
+    networks: [target]
+    mem_limit: 4g
+    cpus: 3
+    healthcheck: {test: ['CMD', 'ollama', 'list'], interval: 15s, timeout: 5s, retries: 6}
+  api:
+    <<: *hardened
+    image: node@sha256:5cbc7caba8c2c0f0bca675d1b61b9f2857e1cf1853c6164ee9dd409501a936e7
+    user: '1000:1000'
+    read_only: true
+    working_dir: /app
+    command: ['node', 'app/server.mjs']
+    restart: unless-stopped
+    environment:
+      BIND: 0.0.0.0
+      DATA_DIR: /data
+      REPORT_DIR: /reports
+      TARGET_MODEL: qwen2.5:1.5b
+      OLLAMA_URL: http://ollama-target:11434
+      LAB_HUMAN_TOKEN: ${LAB_HUMAN_TOKEN:?Run scripts/start-lab.sh}
+      LAB_HERMES_TOKEN: ${LAB_HERMES_TOKEN:?Run scripts/start-lab.sh}
+    volumes: ['./app:/app/app:ro', './data:/data', './reports:/reports:ro']
+    ports: ['127.0.0.1:8080:8080']
+    networks: [front, target]
+    mem_limit: 256m
+    cpus: 0.5
+    depends_on:
+      ollama-target: {condition: service_healthy}
+    healthcheck: {test: ['CMD', 'node', '-e', 'fetch("http://127.0.0.1:8080/healthz").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))'], interval: 15s, timeout: 5s, retries: 6}
+  ollama-attacker:
+    <<: *hardened
+    image: ollama/ollama@sha256:4be1eaabf0dd0152bfbb780347e2888b5fe86ec25d0faa3eb4b1a956173736fb
+    restart: unless-stopped
+    environment: {OLLAMA_HOST: '0.0.0.0:11434', OLLAMA_MODELS: /models, OLLAMA_NUM_PARALLEL: '1', OLLAMA_MAX_LOADED_MODELS: '1', OLLAMA_CONTEXT_LENGTH: '8192', OLLAMA_NO_CLOUD: '1'}
+    volumes: ['./models/attacker:/models']
+    networks: [front]
+    mem_limit: 6g
+    cpus: 4
+    healthcheck: {test: ['CMD', 'ollama', 'list'], interval: 15s, timeout: 5s, retries: 6}
+  hermes:
+    <<: *hardened
+    profiles: [attack]
+    image: nousresearch/hermes-agent@sha256:d566d4a435767265c2a0172030b778fbdaa1a9ab19442c75ec5aad1df32dec54
+    user: '10000:10000'
+    read_only: true
+    init: true
+    entrypoint: ['/opt/hermes/.venv/bin/hermes']
+    command: ['chat', '--query-file', '/task/mission.txt', '--toolsets', 'terminal', '--provider', 'custom', '--model', 'qwen2.5:3b']
+    working_dir: /opt/data
+    dns: [127.0.0.1]
+    environment:
+      HERMES_HOME: /opt/data
+      HERMES_WRITE_SAFE_ROOT: /opt/data
+      TERMINAL_CWD: /opt/data
+      OPENAI_BASE_URL: http://ollama-attacker:11434/v1
+      OPENAI_API_KEY: local-ollama-only
+      LAB_HERMES_TOKEN: ${LAB_HERMES_TOKEN:?Run scripts/start-lab.sh}
+      PYTHONDONTWRITEBYTECODE: '1'
+    volumes: ['./hermes-state:/opt/data', './hermes:/task:ro']
+    tmpfs: ['/tmp:rw,nosuid,nodev,size=128m,uid=10000,gid=10000']
+    networks: [front]
+    mem_limit: 1024m
+    cpus: 1
+    depends_on:
+      api: {condition: service_healthy}
+      ollama-attacker: {condition: service_healthy}
+  verifier:
+    <<: *hardened
+    profiles: [verify]
+    image: node@sha256:5cbc7caba8c2c0f0bca675d1b61b9f2857e1cf1853c6164ee9dd409501a936e7
+    user: '1000:1000'
+    read_only: true
+    network_mode: none
+    command: ['node', '/verifier/verify.mjs']
+    environment: {DATA_DIR: /evidence, REPORT_DIR: /reports}
+    volumes: ['./verifier:/verifier:ro', './data:/evidence:ro', './reports:/reports']
+    mem_limit: 256m
+    cpus: 0.5
+networks:
+  front:
+    internal: true
+    driver_opts: {com.docker.network.bridge.name: br-llmlab-front}
+    ipam:
+      config: [{subnet: 172.29.80.0/24}]
+  target:
+    internal: true
+    driver_opts: {com.docker.network.bridge.name: br-llmlab-tgt}
+    ipam:
+      config: [{subnet: 172.29.81.0/24}]
