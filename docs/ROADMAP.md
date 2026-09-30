@@ -23,6 +23,16 @@ Le socle purple team complet :
   courbes d'historique, couverture ATLAS ; **Grafana** pour les séries temporelles.
 - Provisioning reproductible (`deploy/`) sur VM Proxmox.
 
+## Étape 1bis — Architecte Infra : monter le terrain à auditer
+
+**Avant** de lancer les agents d'audit (Étape 2), il faut une **cible** : un agent
+**Architecte Infra** provisionne une **petite infrastructure type entreprise**
+(annuaire/AD, serveur web, partage de fichiers, base de données, poste de travail)
+dans le lab isolé — le « pseudo-infra » de la décision **D3**. Reproductible,
+idempotent, non destructif, validé humainement, avec des faiblesses volontaires
+**documentées** pour l'entraînement. Sa sortie clé = un **inventaire** qui alimente
+l'agent Recon. Spec : [personas/infra-architect-agent.md](personas/infra-architect-agent.md).
+
 ## Vision — des agents Red spécialisés par phase
 
 Les prochaines étapes suivent la kill-chain, **une IA spécialiste par phase**.
