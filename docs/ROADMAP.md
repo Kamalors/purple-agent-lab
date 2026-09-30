@@ -54,10 +54,17 @@ automatisée, avec suivi des progrès dans le temps (courbes déjà en place).
 
 ### Étape 4 — Équipes d'audit d'infrastructure (destination)
 Généraliser le pattern hors LLM : orchestrer les agents Recon/Exploit/Post-Exploit
-en **équipe** sur une **infrastructure autorisée** (VMs, services du lab), pour un
-**audit de niveau intermédiaire** aboutissant à un **rapport de findings** priorisé
-pour les défenseurs. Mêmes garde-fous : autorisation écrite, périmètre, allowlist,
-validation humaine, preuves horodatées. Le lab Proxmox actuel sert de terrain d'essai.
+en **équipe** sur une **infrastructure autorisée**, pour un **audit de niveau
+intermédiaire** aboutissant à un **rapport de findings** priorisé pour les défenseurs.
+
+Décisions d'architecture actées (détail : [DECISIONS.md](DECISIONS.md)) :
+- **Cerveau des agents** = LLM frontière (**Claude ou ChatGPT**) via API (D1).
+- **Outillage** = conteneur **Kali** piloté par un **serveur MCP** — surface bornée,
+  allowlist au niveau MCP, journalisation, validation humaine (D2).
+- **Cibles** = **pseudo-infrastructure** montée dans le lab, jamais de tiers (D3).
+
+Mêmes garde-fous : autorisation écrite, périmètre, allowlist, validation humaine,
+preuves horodatées. Le lab Proxmox actuel sert de terrain d'essai.
 
 ## Principe directeur
 

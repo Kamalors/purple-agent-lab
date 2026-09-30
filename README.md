@@ -95,5 +95,5 @@ python tests/test_llm_injection.py
 
 ## Contribuer
 
-[CONTRIBUTING.md](CONTRIBUTING.md) · [AGENTS.md](AGENTS.md) · [docs/ROADMAP.md](docs/ROADMAP.md).
+[CONTRIBUTING.md](CONTRIBUTING.md) · [AGENTS.md](AGENTS.md) · [docs/ROADMAP.md](docs/ROADMAP.md) · [docs/DECISIONS.md](docs/DECISIONS.md).
 Règle unique et absolue : **cibles autorisées uniquement**.
