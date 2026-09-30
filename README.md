@@ -71,6 +71,17 @@ ssh lab-guest "sudo bash /tmp/campaign.sh"   # rejoue les 8 scénarios + vérifi
 ```
 Copie le rapport JSON affiché → colle-le dans `dashboard.html` (section « Charger un rapport »).
 
+## Feuille de route
+
+Ceci est l'**Étape 1** (fondations : framework + lab + dashboard + Grafana). La
+suite : des agents Red spécialisés par phase de la kill-chain — **Recon**, puis
+**Exploit**, puis **Post-Exploit** — chacun un `RedAgent` du framework, gardé par
+l'allowlist, dont la valeur est le signal produit pour la détection Blue.
+
+- [docs/ROADMAP.md](docs/ROADMAP.md) — les étapes du projet
+- [docs/personas/](docs/personas/) — specs des futurs agents (recon / exploit / post-exploit)
+- [AGENTS.md](AGENTS.md) — reprise du projet par une IA ou un nouveau contributeur
+
 ## Contribuer
 
 Voir [CONTRIBUTING.md](CONTRIBUTING.md). Règle unique : **cibles de laboratoire autorisées uniquement**.
