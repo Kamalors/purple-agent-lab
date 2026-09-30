@@ -1,0 +1,9 @@
+# Les scripts tournent sous Linux (VM du lab) : forcer LF, jamais CRLF.
+* text=auto eol=lf
+*.sh   text eol=lf
+*.mjs  text eol=lf
+*.py   text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.png binary
+*.jpg binary
