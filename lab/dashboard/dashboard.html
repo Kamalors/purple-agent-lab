@@ -106,6 +106,12 @@
   /* panels */
   .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
   .panel.drag{outline:2px dashed var(--accent);outline-offset:3px}
+  .ctl{display:flex;flex-direction:column;gap:14px}
+  .ctlrow{display:flex;flex-direction:column;gap:5px}
+  .ctlrow .t{font-size:13px;font-weight:600}
+  .ctlrow .r{display:flex;gap:8px;align-items:stretch}
+  .ctlrow code{flex:1;min-width:0;font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;overflow-x:auto;white-space:pre;color:var(--text)}
+  .copybtn{flex:none;align-self:flex-start}
   .steps{display:flex;flex-direction:column;gap:12px;counter-reset:s}
   .step{display:flex;gap:12px}
   .step .n{counter-increment:s;flex:none;width:23px;height:23px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
@@ -245,15 +251,28 @@
   </section>
 
   <section>
-    <div class="sec-head"><span class="eyebrow">Piloter</span><h2>Lancer une simulation</h2></div>
+    <div class="sec-head"><span class="eyebrow">Contrôle</span><h2>Piloter le lab</h2>
+      <span class="note">clique Copier, colle dans PowerShell (dossier du projet)</span></div>
     <div class="panel">
-      <div class="steps">
-        <div class="step"><div class="n"></div><div class="body"><b>Lancer la campagne</b> (les 8 scénarios en mode attaque), depuis la racine du projet :
-          <pre>scp deploy/campaign.sh lab-guest:/tmp/campaign.sh
-ssh lab-guest "sudo bash /tmp/campaign.sh"</pre></div></div>
-        <div class="step"><div class="n"></div><div class="body"><b>Copier le rapport</b> affiché à la fin (le bloc JSON <code class="mono">reports/latest.json</code>).</div></div>
-        <div class="step"><div class="n"></div><div class="body"><b>Coller ci-dessous</b> pour rafraîchir ce tableau de bord. Rien ne quitte ton navigateur.</div></div>
+      <div class="ctl">
+        <div class="ctlrow">
+          <div class="t">▶ Lancer une campagne (les 8 scénarios)</div>
+          <div class="r"><code>scp deploy/campaign.sh lab-guest:/tmp/campaign.sh; ssh lab-guest "tr -d '\r' &lt; /tmp/campaign.sh | sudo bash"</code><button class="btn copybtn">Copier</button></div>
+        </div>
+        <div class="ctlrow">
+          <div class="t">Vrai agent Hermes (attaquant LLM autonome, lent)</div>
+          <div class="r"><code>ssh lab-guest "sudo bash /opt/llm-security-lab/scripts/run-experiments.sh"</code><button class="btn copybtn">Copier</button></div>
+        </div>
+        <div class="ctlrow">
+          <div class="t">Ouvrir Grafana (courbes dans le temps) puis http://localhost:3000</div>
+          <div class="r"><code>ssh -L 3000:127.0.0.1:3000 lab-guest</code><button class="btn copybtn">Copier</button></div>
+        </div>
+        <div class="ctlrow">
+          <div class="t">Voir les jetons du lab</div>
+          <div class="r"><code>ssh lab-guest "sudo cat /opt/llm-security-lab/.env"</code><button class="btn copybtn">Copier</button></div>
+        </div>
       </div>
+      <p style="font-size:12px;color:var(--faint);margin:14px 0 0">Le dashboard est <b>live</b> : après une campagne, les chiffres et la carte se mettent à jour tout seuls.</p>
     </div>
   </section>
 
@@ -560,6 +579,20 @@ const drop=document.getElementById("loadPanel");
 drop.addEventListener("drop", e=>readFile(e.dataTransfer.files[0], "fichier déposé"));
 
 document.getElementById("play").onclick = playMap;
+
+// boutons Copier de la section Contrôle
+document.querySelectorAll(".copybtn").forEach(b=>{
+  b.onclick=()=>{
+    const code=b.parentElement.querySelector("code"); if(!code) return;
+    const txt=code.textContent, orig=b.textContent;
+    const done=()=>{ b.textContent="Copié ✓"; setTimeout(()=>b.textContent=orig,1300); };
+    const fail=()=>{ try{ const r=document.createRange(); r.selectNodeContents(code);
+      const s=getSelection(); s.removeAllRanges(); s.addRange(r); }catch(e){}
+      b.textContent="Sélectionné"; setTimeout(()=>b.textContent=orig,1600); };
+    try{ (navigator.clipboard && navigator.clipboard.writeText(txt) || Promise.reject()).then(done, fail); }
+    catch(e){ fail(); }
+  };
+});
 
 // live: si servi par le conteneur dashboard, /report existe -> auto-refresh (15s)
 async function tryLive(){
