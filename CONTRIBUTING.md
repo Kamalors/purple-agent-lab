@@ -32,6 +32,30 @@ python tests/test_llm_injection.py
 Les tests sont des scripts `assert`, pas de framework. Ouvre ensuite `dashboard.html`
 dans un navigateur pour voir la carte des attaques et charger un rapport.
 
+## Flux de contribution (branches)
+
+`main` est **protégé** : aucun commit direct. Les changements passent par une
+**branche tampon commune** (`staging`) avant `main`.
+
+1. **Ta branche perso** — travaille sur `dev/<ton-pseudo>` (ou `feat/<sujet>`) :
+   ```bash
+   git checkout -b dev/alice
+   # ... commits ...
+   git push -u origin dev/alice
+   ```
+2. **Branche tampon `staging`** — ouvre une **PR de ta branche vers `staging`**.
+   C'est là que les contributions se rassemblent et sont revues.
+3. **`main`** — le mainteneur fusionne `staging` → `main` par PR (revue requise),
+   quand l'intégration est stable.
+
+```
+dev/<pseudo>  ──PR──▶  staging (tampon)  ──PR + revue──▶  main
+```
+
+Règles appliquées par GitHub : `main` requiert une PR + 1 revue ; `staging`
+requiert une PR ; **pas de push direct** sur `main`/`staging`, pas de force-push.
+Un sujet = une branche = une PR courte + un test qui passe.
+
 ## Où contribuer
 
 - **Nouveaux scénarios d'injection** — ajoute une entrée dans `SCENARIOS`
