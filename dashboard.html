@@ -6,7 +6,7 @@
     --text:#191626; --dim:#5f5a72; --faint:#8a84a0;
     --accent:#6d4aff; --accent-soft:#efeaff;
     --red:#c92a30; --red-bg:#fbe9ea; --green:#137a48; --green-bg:#e5f3eb;
-    --amber:#8a5d00; --amber-bg:#faefd6; --grey:#6a6580; --grey-bg:#eeecf4;
+    --amber:#8a5d00; --amber-bg:#faefd6; --grey:#6a6580; --grey-bg:#eeecf4; --blue:#1f7fa8;
     --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
     --sans:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
   }
@@ -15,7 +15,7 @@
     --text:#ece9f6; --dim:#a29ab7; --faint:#7b7591;
     --accent:#9d80ff; --accent-soft:#251d3d;
     --red:#ff7175; --red-bg:#38191d; --green:#4fca8b; --green-bg:#14301f;
-    --amber:#e2ac52; --amber-bg:#31250c; --grey:#9b95af; --grey-bg:#262233;
+    --amber:#e2ac52; --amber-bg:#31250c; --grey:#9b95af; --grey-bg:#262233; --blue:#4fbfe6;
     color-scheme:dark;
   }}
   :root[data-theme="dark"]{
@@ -23,7 +23,7 @@
     --text:#ece9f6; --dim:#a29ab7; --faint:#7b7591;
     --accent:#9d80ff; --accent-soft:#251d3d;
     --red:#ff7175; --red-bg:#38191d; --green:#4fca8b; --green-bg:#14301f;
-    --amber:#e2ac52; --amber-bg:#31250c; --grey:#9b95af; --grey-bg:#262233;
+    --amber:#e2ac52; --amber-bg:#31250c; --grey:#9b95af; --grey-bg:#262233; --blue:#4fbfe6;
     color-scheme:dark;
   }
   *{box-sizing:border-box}
@@ -127,7 +127,7 @@
   .loadbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
   .loadbar .msg{font-size:12px;font-family:var(--mono)}
   .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .histchart{display:flex;align-items:flex-end;gap:10px;min-height:118px;overflow-x:auto;padding-bottom:4px}
+  .histchart{overflow-x:auto;padding-bottom:4px}
   .hbar{flex:0 0 auto;width:46px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;background:none;border:none;padding:0}
   .hbar .col{width:26px;height:90px;display:flex;flex-direction:column;justify-content:flex-end}
   .hbar .fill{width:100%;background:var(--red);border-radius:4px 4px 0 0;min-height:3px}
@@ -169,7 +169,7 @@
   .introcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
   .introcols>div{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:11px 12px;font-size:13px}
   .tag{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;margin-right:6px}
-  .tag.red{color:var(--red);background:var(--red-bg)}.tag.blue{color:#1f8fbf;background:var(--surface-2)}.tag.purple{color:var(--accent);background:var(--accent-soft)}
+  .tag.red{color:var(--red);background:var(--red-bg)}.tag.blue{color:var(--blue);background:var(--surface-2)}.tag.purple{color:var(--accent);background:var(--accent-soft)}
   /* terminal de narration */
   .term{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#0d1117;margin-top:14px}
   .termbar{display:flex;align-items:center;gap:7px;padding:8px 12px;background:#161b22;border-bottom:1px solid #21262d}
@@ -179,6 +179,8 @@
   .termtoggle{margin-left:auto;display:flex;gap:4px}
   .tmode{font-family:var(--mono);font-size:11px;color:#8b949e;background:transparent;border:1px solid #30363d;border-radius:6px;padding:3px 10px;cursor:pointer}
   .tmode.active{color:#fff;background:#21262d;border-color:#8b949e}
+  .tmode:focus-visible{outline:2px solid #79c0ff;outline-offset:2px}
+  .lc-pt:focus-visible{outline:2px solid var(--accent)}
   .termbody{font-family:var(--mono);font-size:12px;line-height:1.65;color:#c9d1d9;padding:12px 14px;min-height:88px;max-height:290px;overflow-y:auto}
   .termline{animation:fadein .3s ease}
   @keyframes fadein{from{opacity:0;transform:translateY(3px)}to{opacity:1}}
@@ -718,7 +720,7 @@ function renderHistory(){
   sums.forEach((s,i)=>{
     const big=s.g===CURG?5:3.5;
     pts+=`<circle class="lc-pt" data-i="${i}" cx="${X(i).toFixed(1)}" cy="${Y(s.h).toFixed(1)}" r="${big}" fill="var(--green)"></circle>`;
-    pts+=`<circle class="lc-pt" data-i="${i}" cx="${X(i).toFixed(1)}" cy="${Y(s.c).toFixed(1)}" r="${big}" fill="var(--red)"><title>${esc(lab(i))} — ${s.c} compromis / ${s.h} tenus</title></circle>`;
+    pts+=`<circle class="lc-pt" data-i="${i}" tabindex="0" role="button" aria-label="${esc(lab(i))} : ${s.c} compromis, ${s.h} tenus (ouvrir ce run)" cx="${X(i).toFixed(1)}" cy="${Y(s.c).toFixed(1)}" r="${big}" fill="var(--red)"><title>${esc(lab(i))} — ${s.c} compromis / ${s.h} tenus</title></circle>`;
   });
   document.getElementById("histChart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Courbes historiques des campagnes">
     ${grid}
@@ -728,7 +730,11 @@ function renderHistory(){
     <text class="lc-leg" x="${W-PR}" y="12" text-anchor="end" fill="var(--red)">● compromis</text>
     <text class="lc-leg" x="${W-PR-96}" y="12" text-anchor="end" fill="var(--green)">● tenus</text>
   </svg>`;
-  document.querySelectorAll(".lc-pt").forEach(el=>el.onclick=()=>{ render(sums[+el.dataset.i].rep); renderHistory(); window.scrollTo({top:0,behavior:"smooth"}); });
+  document.querySelectorAll(".lc-pt").forEach(el=>{
+    const open=()=>{ render(sums[+el.dataset.i].rep); renderHistory(); window.scrollTo({top:0,behavior:"smooth"}); };
+    el.onclick=open;
+    el.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); } };
+  });
   const m=document.getElementById("histmsg"); if(m) m.textContent=sums.length+" run(s) — clique un point pour rouvrir";
 }
 document.getElementById("clearHist").onclick=()=>{

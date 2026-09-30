@@ -21,14 +21,16 @@ class TargetAllowlist:
     """
 
     def __init__(self, hosts: list[str] | None = None, cidrs: list[str] | None = None):
-        self.hosts = set(hosts or [])
+        # Les noms d'hôtes sont insensibles à la casse (DNS) ; on normalise.
+        self.hosts = {h.strip().lower() for h in (hosts or [])}
         self.networks = [ipaddress.ip_network(c, strict=False) for c in (cidrs or [])]
 
     def allows(self, target: str) -> bool:
-        if target in self.hosts:
+        t = (target or "").strip()
+        if t.lower() in self.hosts:
             return True
         try:
-            ip = ipaddress.ip_address(target)
+            ip = ipaddress.ip_address(t)
         except ValueError:
             return False  # nom d'hôte non listé explicitement => refusé
         return any(ip in net for net in self.networks)

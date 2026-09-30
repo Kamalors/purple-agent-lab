@@ -49,6 +49,13 @@ def test_allowlist_host_et_cidr():
     assert not al.allows("evil.example.com")
 
 
+def test_allowlist_insensible_casse_et_espaces():
+    al = TargetAllowlist(hosts=["Target.Lab"])
+    assert al.allows("target.lab")
+    assert al.allows("  TARGET.LAB  ")
+    assert not al.allows("other.lab")
+
+
 def test_cible_hors_perimetre_stoppe_le_cycle():
     al = TargetAllowlist(hosts=["10.0.0.1"])
     orch = PurpleOrchestrator(al, [DemoRecon("red", "8.8.8.8")], [DemoSensor("blue")])
