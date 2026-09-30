@@ -11,11 +11,19 @@ toute cible non déclarée dans `config/lab.toml` (fail-closed). On ne le contou
 pas. Données synthétiques uniquement. But du projet = **mesurer et améliorer les
 défenses** (purple team), pas attaquer le monde réel.
 
-## En une phrase
+## But final
 
-Purple Agent Lab teste la robustesse des LLM face aux **injections de prompt** :
-un côté **Red** attaque, un côté **Blue** (cible gardée) défend, un **Purple**
-(vérificateur indépendant) mesure objectivement, mappé sur **MITRE ATLAS**.
+Des **équipes d'agents IA** qui réalisent des **audits de sécurité de niveau
+intermédiaire sur des infrastructures autorisées**, en méthodologie purple team :
+Red trouve, Blue détecte, Purple orchestre et produit un rapport, mappé sur MITRE
+ATT&CK/ATLAS. **La partie LLM (ci-dessous) est l'Étape 1** — elle prouve le pattern
+Red/Blue/Purple sur un cas concret avant de le généraliser à l'infra.
+
+## Étape 1 en une phrase
+
+Un côté **Red** attaque un LLM par **injection de prompt**, un côté **Blue** (cible
+gardée) défend, un **Purple** (vérificateur indépendant) mesure objectivement,
+mappé sur **MITRE ATLAS**.
 
 ## Carte du dépôt
 

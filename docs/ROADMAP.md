@@ -1,9 +1,14 @@
 # Roadmap — Purple Agent Lab
 
-> Cadre : tout se déroule sur des **cibles de laboratoire autorisées**, avec
-> données fictives, allowlist fail-closed. Chaque agent Red existe pour **produire
-> du signal mesurable côté Blue** — la finalité est défensive (mesurer et
-> améliorer la robustesse), pas offensive dans le monde réel.
+**But final :** des **équipes d'agents IA** capables de mener des **audits de
+sécurité de niveau intermédiaire sur des infrastructures autorisées** (recon →
+exploit → post-exploit → rapport), en méthodologie purple team. La partie LLM
+(Étape 1) prouve le pattern Red/Blue/Purple avant de le généraliser à l'infra.
+
+> Cadre : uniquement des cibles **autorisées** (autorisation écrite + périmètre
+> défini), allowlist fail-closed, validation humaine avant toute action à impact.
+> Chaque agent Red existe pour **produire du signal mesurable côté Blue** et un
+> **rapport pour les défenseurs** — finalité défensive, jamais offensive hors cadre.
 
 ## Étape 1 — Fondations (FAITE)
 
@@ -46,6 +51,13 @@ tours, enchaînement de règles cassées. Données fictives, tours bornés.
 Pour chaque technique des agents Red : détections dédiées côté Blue, alerting
 Grafana, et une boucle « attaque → détection → durcissement → re-mesure »
 automatisée, avec suivi des progrès dans le temps (courbes déjà en place).
+
+### Étape 4 — Équipes d'audit d'infrastructure (destination)
+Généraliser le pattern hors LLM : orchestrer les agents Recon/Exploit/Post-Exploit
+en **équipe** sur une **infrastructure autorisée** (VMs, services du lab), pour un
+**audit de niveau intermédiaire** aboutissant à un **rapport de findings** priorisé
+pour les défenseurs. Mêmes garde-fous : autorisation écrite, périmètre, allowlist,
+validation humaine, preuves horodatées. Le lab Proxmox actuel sert de terrain d'essai.
 
 ## Principe directeur
 
