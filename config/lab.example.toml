@@ -1,0 +1,6 @@
+# Périmètre du lab AUTORISÉ. Copiez en config/lab.toml (git-ignoré) et adaptez.
+# Fail-closed : seules les cibles listées ici peuvent être visées par un Red agent.
+
+[scope]
+hosts = ["192.168.56.10", "target.lab.local"]
+cidrs = ["10.10.10.0/24"]

@@ -8,3 +8,4 @@
 logs/
 reports/
 artifacts/
+config/lab.toml
