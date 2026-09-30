@@ -103,7 +103,10 @@ Voir **`docs/DECISIONS.md`** (source de vérité de la direction commune). En br
 
 ## Suite du projet
 
-`docs/ROADMAP.md` + `docs/DECISIONS.md` + les personas dans `docs/personas/`. Prochaines briques : des
+`docs/ROADMAP.md` + `docs/DECISIONS.md` + les personas dans `docs/personas/`.
+**Prochaine brique = Étape 1bis** : l'agent **Architecte Infra**
+(`docs/personas/infra-architect-agent.md`) monte une petite infra type entreprise
+(le terrain à auditer) AVANT les agents d'audit de l'Étape 2. Prochaines briques : des
 agents Red spécialisés (recon, exploit, post-exploit), chacun un `RedAgent` du
 framework, gardé par l'allowlist, dont la valeur est le **signal produit pour la
 détection Blue**.
